@@ -1,7 +1,7 @@
 <?php
 /*
-* Foo_Options_Helper class
-* A helper class for storing all your plugin settings as a single WP option
+* Foo_Plugin_Options class
+* A helper class for storing all your plugin options as a single WP option. Multi-site friendly.
 *
 * Version: 1.1
 * Author: Brad Vincent
@@ -12,33 +12,79 @@
 if ( !class_exists( 'Foo_Plugin_Options' ) ) {
 	class Foo_Plugin_Options {
 
+		/**
+		 * @var string The version of the Foo_Plugin_Options class.
+		 */
 		public $version = '1.0.0';
 
-		protected $plugin_slug;
+		/**
+		 * @var string The name of the option that will be saved to the options table.
+		 */
+		protected $option_name;
 
-		function __construct($plugin_slug) {
-			$this->plugin_slug = $plugin_slug;
+		/**
+		 * Foo_Plugin_Options Constructor
+		 *
+		 * @param string $option_name The name of the single option we want to save in the options table. Usually the plugin slug.
+		 */
+		function __construct($option_name) {
+			$this->option_name = $option_name;
 		}
 
-		private function get_all() {
-			return get_option( $this->plugin_slug );
-		}
-
-		// save a WP option for the plugin. Stores an array of data, so only 1 option is saved for the whole plugin to save DB space and so that the options table is not polluted with hundreds of entries
-		function save($key, $value) {
-			$options = $this->get_all();
-			if ( !$options ) {
-				//no options have been saved for this plugin
-				add_option( $this->plugin_slug, array($key => $value) );
+		/**
+		 * Returns the array of options.
+		 * @return mixed
+		 */
+		private function get_options() {
+			if ( is_network_admin() ) {
+				return get_site_option( $this->option_name );
 			} else {
-				$options[$key] = $value;
-				update_option( $this->plugin_slug, $options );
+				return wp_parse_args( get_option( $this->option_name ), get_site_option( $this->option_name ) );
 			}
 		}
 
-		//get a WP option value for the plugin
+		/**
+		 * Save an individual option.
+		 *
+		 * @param string $key   The key of the individual option that will be stored.
+		 * @param mixed  $value The value of the individual option that will be stored.
+		 */
+		function save($key, $value) {
+			//first get the options
+			$options = $this->get_options();
+
+			if ( !$options ) {
+				//no options have been saved yet, so add it
+
+				if ( is_network_admin() ) {
+					add_site_option( $this->option_name, array($key => $value) );
+				} else {
+					add_option( $this->option_name, array($key => $value) );
+				}
+
+			} else {
+				//update the existing option
+				$options[$key] = $value;
+
+				if ( is_network_admin() ) {
+					update_site_option( $this->option_name, $options );
+				} else {
+					update_option( $this->option_name, $options );
+				}
+			}
+		}
+
+		/**
+		 * Get an individual option.
+		 *
+		 * @param string $key     The key of the individual option that will be stored.
+		 * @param mixed  $default Optional. The default value to return if the key was not found.
+		 *
+		 * @return mixed
+		 */
 		function get($key, $default = false) {
-			$options = $this->get_all();
+			$options = $this->get_options();
+
 			if ( $options ) {
 				return (array_key_exists( $key, $options )) ? $options[$key] : $default;
 			}
@@ -46,29 +92,23 @@ if ( !class_exists( 'Foo_Plugin_Options' ) ) {
 			return $default;
 		}
 
-		function is_checked($key, $default = false) {
-			$options = $this->get_all();
-			if ( $options ) {
-				return array_key_exists( $key, $options );
-			}
-
-			return $default;
-		}
-
+		/**
+		 * Delete an individual option.
+		 *
+		 * @param $key The key of the individual option we want to delete.
+		 */
 		function delete($key) {
-			$options = $this->get_all();
+			$options = $this->get_options();
+
 			if ( $options ) {
 				unset($options[$key]);
-				update_option( $this->plugin_slug, $options );
+
+				if ( is_network_admin() ) {
+					update_site_option( $this->option_name, $options );
+				} else {
+					update_option( $this->option_name, $options );
+				}
 			}
-		}
-
-		function get_int($key, $default = 0) {
-			return intval( $this->get($key, $default) );
-		}
-
-		function get_float($key, $default = 0) {
-			return floatval( $this->get($key, $default) );
 		}
 	}
 }

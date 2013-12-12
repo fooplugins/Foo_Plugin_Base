@@ -42,7 +42,7 @@ $plugin_slug = $plugin_info['slug'];
                     //we have tabs - woot!
                 ?>
                 <div style="float:left;height:16px;width:16px;"><!-- spacer for tabs --></div>
-                <h3 class="nav-tab-wrapper">
+                <h3 class="foo-nav-tabs nav-tab-wrapper">
                 <?php
                     //loop through the tabs to render the actual tabs at the top
                     $first = true;

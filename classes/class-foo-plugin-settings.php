@@ -37,9 +37,13 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_0' ) ) {
 			return false;
 		}
 
+		function has_tab($tab_id) {
+			return array_key_exists( $tab_id, $this->_settings_tabs );
+		}
+
 		// add a setting tab
 		function add_tab($tab_id, $title) {
-			if ( !array_key_exists( $tab_id, $this->_settings_tabs ) ) {
+			if ( !$this->has_tab( $tab_id ) ) {
 
 				//pre action
 				do_action( $this->plugin_slug . '-before_settings_tab', $tab_id, $title );
@@ -56,11 +60,15 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_0' ) ) {
 			}
 		}
 
+		function has_section($section_id) {
+			return array_key_exists( $section_id, $this->_settings_sections );
+		}
+
 		// add a setting section
 		function add_section($section_id, $title, $desc = '') {
 
 			//check we have the section
-			if ( !array_key_exists( $section_id, $this->_settings_sections ) ) {
+			if ( !$this->has_section( $section_id ) ) {
 
 				//pre action
 				do_action( $this->plugin_slug . '-before_settings_section', $section_id, $title, $desc );
@@ -100,6 +108,29 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_0' ) ) {
 			}
 
 			return $section_id;
+		}
+
+		function add_settings($settings = false) {
+			if ( !is_array( $settings ) || ( !array_key_exists( 'settings', $settings ) ) ) return;
+
+			foreach($settings['settings'] as $setting) {
+				//add a tab if needed
+				$tab_id = foo_safe_get( $setting, 'tab', false );
+
+				if ($tab_id !== false && !$this->has_tab( $tab_id ) && array_key_exists( 'tabs', $settings ) && array_key_exists( $tab_id, $settings['tabs'] ) ) {
+					$tab = $settings['tabs'][$tab_id];
+					$this->add_tab( $tab_id, $tab );
+				}
+
+				//add a section if needed
+				$section_id = foo_safe_get( $setting, 'section', false );
+				if ($section_id !== false && !$this->has_section( $section_id ) &&  array_key_exists( 'sections', $settings ) && array_key_exists( $section_id, $settings['sections'] ) ) {
+					$section = $settings['sections'][$section_id];
+					$this->add_section_to_tab( $tab_id, $section_id, $section['name'] );
+				}
+
+				$this->add_setting( $setting );
+			}
 		}
 
 		// add a settings field
@@ -295,7 +326,7 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_0' ) ) {
 					break;
 				case 'image':
 					echo '<input class="regular-text image-upload-url" type="text" id="' . $id . '" name="' . $this->plugin_slug . '[' . $id . ']" placeholder="' . $placeholder . '" value="' . esc_attr( $options[$id] ) . '" />';
-					echo '<input id="st_upload_button" class="image-upload-button" type="button" name="upload_button" value="' . __( 'Select Image', $this->plugin_slug ) . '" />';
+					echo '<input data-uploader-title="' . __('Select An Image', $this->plugin_slug) . '" data-link="' . $id . '" class="image-upload-button" type="button" name="upload_button" value="' . __( 'Select Image', $this->plugin_slug ) . '" />';
 					break;
 
 				default:

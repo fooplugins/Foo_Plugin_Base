@@ -182,8 +182,18 @@ if ( !class_exists( 'Foo_Plugin_Base_v2_0' ) ) {
 
 			$js_src_url = $file;
 			if ( !foo_contains( $file, '://' ) ) {
+
+				//check for the file in plugin root js directory
 				$js_src_url = $this->plugin_url . 'js/' . $file;
-				if ( !file_exists( $this->plugin_dir . 'js/' . $file ) ) return;
+				if ( !file_exists( $this->plugin_dir . 'js/' . $file ) ) {
+
+					//check for the file in relative js directory
+					$js_src_url = plugin_dir_url( __FILE__ ) . 'js/' . $file;
+					if ( !file_exists( plugin_dir_path( __FILE__ ) . 'js/' . $file ) ) {
+						return;
+					}
+
+				}
 			}
 			$h = str_replace( '.', '-', pathinfo( $file, PATHINFO_FILENAME ) );
 
@@ -222,7 +232,9 @@ if ( !class_exists( 'Foo_Plugin_Base_v2_0' ) ) {
 
 		// register any options/settings we may want to store for this plugin
 		function admin_create_settings() {
-			do_action( $this->plugin_slug . '-admin_create_settings', $this, $this->_settings );
+			$settings = apply_filters( $this->plugin_slug . '-admin_settings', false );
+
+			$this->_settings->add_settings( $settings );
 		}
 
 		// enqueue the admin scripts
@@ -231,15 +243,15 @@ if ( !class_exists( 'Foo_Plugin_Base_v2_0' ) ) {
 			//add a general admin script
 			$this->register_and_enqueue_js( 'admin.js' );
 
-			//if we are on the current plugin's settings page then check for file named /js/admin-settings.js
+			//if we are on the current plugin settings page then check for file named /js/admin-settings.js
 			if ( foo_check_plugin_settings_page( $this->plugin_slug ) ) {
 				$this->register_and_enqueue_js( 'admin-settings.js' );
 
 				//check if we are using an upload setting and add media uploader scripts
 				if ( $this->_settings->has_setting_of_type( 'image' ) ) {
-					wp_enqueue_script( 'media-upload' );
-					wp_enqueue_script( 'thickbox' );
-					$this->register_and_enqueue_js( 'admin-uploader.js', array('jquery', 'media-upload', 'thickbox') );
+					//wp_enqueue_script( 'media-upload' );
+					//wp_enqueue_script( 'thickbox' );
+					//$this->register_and_enqueue_js( 'admin-uploader.js', array('jquery', 'media-upload', 'thickbox') );
 				}
 			}
 

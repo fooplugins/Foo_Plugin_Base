@@ -1,21 +1,17 @@
 <?php
 /*
-* Foo_Plugin_Options class
-* A helper class for storing all your plugin options as a single WP option. Multi-site friendly.
-*
-* Version: 1.1
-* Author: Brad Vincent
-* Author URI: http://fooplugins.com
-* License: GPL2
+ * Foo_Plugin_Options class
+ *
+ * A helper class for storing all your plugin options as a single WP option. Multi-site friendly.
+ *
+ * Version: 2.0
+ * Author: Brad Vincent
+ * Author URI: http://fooplugins.com
+ * License: GPL2
 */
 
-if ( !class_exists( 'Foo_Plugin_Options' ) ) {
-	class Foo_Plugin_Options {
-
-		/**
-		 * @var string The version of the Foo_Plugin_Options class.
-		 */
-		public $version = '1.0.0';
+if ( !class_exists( 'Foo_Plugin_Options_v2_0' ) ) {
+	class Foo_Plugin_Options_v2_0 {
 
 		/**
 		 * @var string The name of the option that will be saved to the options table.

@@ -1,14 +1,19 @@
 <?php
+/*
+ * Foo Plugin Settings
+ *
+ * A helpful class to handle settings for a plugin
+ *
+ * Version: 2.0
+ * Author: Brad Vincent
+ * Author URI: http://fooplugins.com
+ * License: GPL2
+*/
 
-if ( !class_exists( 'Foo_Plugin_Settings' ) ) {
-	class Foo_Plugin_Settings {
-
-		public $version = '1.0.0';
+if ( !class_exists( 'Foo_Plugin_Settings_v2_0' ) ) {
+	class Foo_Plugin_Settings_v2_0 {
 
 		protected $plugin_slug;
-
-		/** @var Foo_Utils_v1_0 */
-		protected $_utils = false;
 
 		protected $_settings = array(); //the plugin settings array
 		protected $_settings_sections = array(); //the plugin sections array
@@ -17,7 +22,6 @@ if ( !class_exists( 'Foo_Plugin_Settings' ) ) {
 
 		function __construct($plugin_slug) {
 			$this->plugin_slug = $plugin_slug;
-			$this->_utils      = new Foo_Utils_v1_0();
 		}
 
 		function get_tabs() {
@@ -137,20 +141,20 @@ if ( !class_exists( 'Foo_Plugin_Settings' ) ) {
 
 			$this->_settings[] = $args;
 
-			$section_id = $this->_utils->to_key( $section );
+			$section_id = foo_convert_to_key( $section );
 
 			//check we have the tab
 			if ( !empty($tab) ) {
-				$tab_id = $this->_utils->to_key( $tab );
+				$tab_id = foo_convert_to_key( $tab );
 
 				//add the tab
-				$this->add_tab( $tab_id, $this->_utils->to_title( $tab ) );
+				$this->add_tab( $tab_id, foo_title_case( $tab ) );
 
 				//add the section
-				$section_id = $this->add_section_to_tab( $tab_id, $section_id, $this->_utils->to_title( $section ) );
+				$section_id = $this->add_section_to_tab( $tab_id, $section_id, foo_title_case( $section ) );
 			} else {
 				//just add the section
-				$this->add_section( $section_id, $this->_utils->to_title( $section ) );
+				$this->add_section( $section_id, foo_title_case( $section ) );
 			}
 
 			do_action( $this->plugin_slug . '-before_setting', $args );
@@ -169,7 +173,20 @@ if ( !class_exists( 'Foo_Plugin_Settings' ) ) {
 
 			extract( $args );
 
-			$options = get_option( $this->plugin_slug );
+			$options = get_option($this->plugin_slug);
+
+			if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+
+				//if we are in the network settings then use site options directly.
+				if (is_network_admin()) {
+					$options = get_site_option($this->plugin_slug);
+				} else {
+					$site_options = get_site_option($this->plugin_slug);
+					$options = wp_parse_args($options, $site_options);
+				}
+			}
+
+			$has_options = $options !== false;
 
 			if ( !isset($options[$id]) && $type != 'checkbox' ) {
 				$options[$id] = $default;
@@ -196,9 +213,11 @@ if ( !class_exists( 'Foo_Plugin_Settings' ) ) {
 
 				case 'checkbox':
 					$checked = '';
-					if ( isset($options[$id]) && $options[$id] == 'on' ) {
+					if (isset($options[$id]) && $options[$id] == 'on') {
 						$checked = ' checked="checked"';
-					} else if ( $options === false && $default == 'on' ) {
+					} else if ($options === false && $default == 'on') {
+						$checked = ' checked="checked"';
+					} else if ($has_options === false && $default == 'on') {
 						$checked = ' checked="checked"';
 					}
 

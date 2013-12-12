@@ -3,15 +3,19 @@
  * Foo_Plugin_Base
  * A base class for WordPress plugins. Get up and running quickly with this opinionated, convention based, plugin framework
  *
- * Version: 1.1
+ * A note about class versioning: to avoid running into issues when multiple plugins are using different versions of this base class,
+ *  we append a version number to the class name. This avoids situations where multiple versions of the same class are loaded into memory and things no longer work as expected.
+ *  This situation is extremely difficult to debug, and results in weird errors only when multiple plugins using the base class are activated on a single install
+ *
+ * Version: 2.0
  * Author: Brad Vincent
  * Author URI: http://fooplugins.com
  * License: GPL2
 */
 
-if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
+if ( !class_exists( 'Foo_Plugin_Base_v2_0' ) ) {
 
-	abstract class Foo_Plugin_Base_v1_1 {
+	abstract class Foo_Plugin_Base_v2_0 {
 
 		/**
 		 * Unique identifier for your plugin.
@@ -40,51 +44,26 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 		protected $plugin_dir_name; //the folder name of the plugin
 		protected $plugin_url; //the plugin url
 
-		/**
-		 * @var string Foo Plugin Base version number
-		 */
-		public $version = '2.0.0';
+		/* internal class dependencies */
 
-		/* internal dependencies */
-
-		/** @var Foo_Plugin_Utils */
-		protected $_utils = false; //a reference to our utils class
-
-		/** @var Foo_Plugin_Settings */
+		/** @var Foo_Plugin_Settings_v2_0 */
 		protected $_settings = false; //a ref to our settings helper class
 
-		/** @var Foo_Plugin_Options */
+		/** @var Foo_Plugin_Options_v2_0 */
 		protected $_options = false; //a ref to our options helper class
 
-		/** @var Foo_Plugin_Screen */
-		protected $_screen; //a ref to our screen helper class
-
 		/*
-		 * @return Foo_Plugin_Settings_v1_0
+		 * @return Foo_Plugin_Settings_v2_0
 		 */
 		public function settings() {
 			return $this->_settings;
 		}
 
 		/*
-		 * @return Foo_Plugin_Options_v1_1
+		 * @return Foo_Plugin_Options_v2_0
 		 */
 		public function options() {
 			return $this->_options;
-		}
-
-		/*
-		 * @return Foo_Plugin_Screen_v1_0
-		 */
-		public function screen() {
-			return $this->_screen;
-		}
-
-		/*
-		 * @return Foo_Utils_v1_0
-		 */
-		public function utils() {
-			return $this->_utils;
 		}
 
 		/*
@@ -105,35 +84,31 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 		}
 
 		/*
-		 * plugin constructor
-		 * If the subclass makes use of a constructor, make sure the subclass calls parent::__construct() or parent::init()
-		 */
-		function __construct($file) {
-			$this->init( $file );
-		}
-
-		/*
 		 * Initializes the plugin.
 		 */
-		function init($file, $slug = false, $version = false, $title = false) {
-
-			$this->plugin_file     = $file;
-			$this->plugin_dir      = trailingslashit( dirname( $file ) );
-			$this->plugin_dir_name = plugin_basename( $this->plugin_dir );
-			$this->plugin_url      = trailingslashit( plugins_url( '', $file ) );
-
-			if ( $slug !== false ) $this->plugin_slug = $slug;
-			if ( $version !== false ) $this->plugin_version = $version;
-			if ( $title !== false ) $this->plugin_title = $title;
+		function init($file, $slug = false, $version = '0.0.1', $title = false) {
 
 			//check to make sure the mandatory plugin fields have been set
-			$this->check_mandatory_plugin_variables_set();
+			if ( empty($file) ) {
+				throw new Exception('Required plugin variable not set : \'plugin_file\'. Please set this in the init() function of your plugin.');
+			}
+			if ( empty( $version ) ) {
+				throw new Exception('Required plugin variable not set : \'plugin_version\'. Please set this in the init() function of your plugin.');
+			}
+
+			$this->plugin_file     = $file;
+			$this->plugin_dir      = plugin_dir_path( $file );
+			$this->plugin_dir_name = plugin_basename( $this->plugin_dir );
+			$this->plugin_url      = plugin_dir_url( $file );
+			$this->plugin_slug 	= $slug !== false ? $slug : plugin_basename( $file );
+			$this->plugin_title 	= $title !== false ? $title : foo_title_case( $this->plugin_slug );
+			$this->plugin_version = $version;
 
 			//load any plugin dependencies
 			$this->load_dependencies();
 
 			//check we are using php 5
-			$this->_utils->check_php_version( $this->plugin_title, '5.0.0' );
+			foo_check_php_version( $this->plugin_title, '5.0.0' );
 
 			// Load plugin text domain
 			add_action( 'init', array($this, 'load_plugin_textdomain') );
@@ -164,40 +139,16 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			do_action( $this->plugin_slug . '-' . (is_admin() ? 'admin' : '') . '_init' );
 		}
 
-		function check_mandatory_plugin_variables_set() {
-			if ( empty($this->plugin_file) ) {
-				throw new Exception('Required plugin variable not set : \'plugin_file\'. Please set this in the init() function of your plugin.');
-			}
-			if ( $this->plugin_slug === false ) {
-				throw new Exception('Required plugin variable not set : \'plugin_slug\'. Please set this in the init() function of your plugin.');
-			}
-			if ( $this->plugin_title === false ) {
-				throw new Exception('Required plugin variable not set : \'plugin_title\'. Please set this in the init() function of your plugin.');
-			}
-			if ( $this->plugin_version === false ) {
-				throw new Exception('Required plugin variable not set : \'plugin_version\'. Please set this in the init() function of your plugin.');
-			}
-		}
-
 		//load any dependencies
 		function load_dependencies() {
-			require_once 'dependencies/class-foo-plugin-utils.php';
-			require_once 'dependencies/class-foo-plugin-settings.php';
-			require_once 'dependencies/class-foo-plugin-options.php';
-			require_once 'dependencies/class-foo-plugin-screen.php';
+			//require the files
+			require_once 'includes.php';
 
-			$this->_utils    = new Foo_Plugin_Utils();
-			$this->_settings = new Foo_Plugin_Settings($this->plugin_slug);
-			$this->_options  = new Foo_Plugin_Options($this->plugin_slug);
-			$this->_screen   = new Foo_Plugin_Screen($this->plugin_slug);
+			//instantiate the classes
+			$this->_settings = new Foo_Plugin_Settings_v2_0($this->plugin_slug);
+			$this->_options  = new Foo_Plugin_Options_v2_0($this->plugin_slug);
 
-			//we need to make sure that we are running the correct versions of our dependancies
-			$this->assert_dependency_version( $this->_utils, '1.0.0' );
-			$this->assert_dependency_version( $this->_settings, '1.0.0' );
-			$this->assert_dependency_version( $this->_options->version, '1.0.0' );
-			$this->assert_dependency_version( $this->_screen, '1.0.0' );
-
-			do_action( $this->plugin_slug . '-load_dependencies' );
+			do_action( $this->plugin_slug . '-loaded_dependencies' );
 		}
 
 		/**
@@ -211,12 +162,12 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			$locale = apply_filters( 'plugin_locale', get_locale(), $domain );
 
 			load_textdomain( $domain, WP_LANG_DIR . '/' . $domain . '/' . $domain . '-' . $locale . '.mo' );
-			load_plugin_textdomain( $domain, false, $this->plugin_dir . '/lang/' );
+			load_plugin_textdomain( $domain, false, $this->plugin_dir . '/languages/' );
 		}
 
 		//wrapper around the apply_filters function that appends the plugin slug to the tag
 		function apply_filters($tag, $value) {
-			if ( !$this->_utils->starts_with( $tag, $this->plugin_slug ) ) {
+			if ( !foo_starts_with( $tag, $this->plugin_slug ) ) {
 				$tag = $this->plugin_slug . '-' . $tag;
 			}
 
@@ -230,7 +181,7 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			}
 
 			$js_src_url = $file;
-			if ( !$this->_utils->str_contains( $file, '://' ) ) {
+			if ( !foo_contains( $file, '://' ) ) {
 				$js_src_url = $this->plugin_url . 'js/' . $file;
 				if ( !file_exists( $this->plugin_dir . 'js/' . $file ) ) return;
 			}
@@ -253,7 +204,7 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			}
 
 			$css_src_url = $file;
-			if ( !$this->_utils->str_contains( $file, '://' ) ) {
+			if ( !foo_contains( $file, '://' ) ) {
 				$css_src_url = $this->plugin_url . 'css/' . $file;
 				if ( !file_exists( $this->plugin_dir . 'css/' . $file ) ) return;
 			}
@@ -281,7 +232,7 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			$this->register_and_enqueue_js( 'admin.js' );
 
 			//if we are on the current plugin's settings page then check for file named /js/admin-settings.js
-			if ( $this->_screen->is_plugin_settings_page() ) {
+			if ( foo_check_plugin_settings_page( $this->plugin_slug ) ) {
 				$this->register_and_enqueue_js( 'admin-settings.js' );
 
 				//check if we are using an upload setting and add media uploader scripts
@@ -293,13 +244,13 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			}
 
 			//add any scripts for the current post type
-			$post_type = $this->_screen->get_screen_post_type();
+			$post_type = foo_current_screen_post_type();
 			if ( !empty($post_type) ) {
 				$this->register_and_enqueue_js( 'admin-' . $post_type . '.js' );
 			}
 
 			//finally try add any scripts for the current screen id /css/admin-screen-id.css
-			$this->register_and_enqueue_js( 'admin-' . $this->_screen->get_screen_id() . '.js' );
+			$this->register_and_enqueue_js( 'admin-' . foo_current_screen_id() . '.js' );
 
 			do_action( $this->plugin_slug . '-admin_print_scripts' );
 		}
@@ -311,7 +262,7 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			$this->register_and_enqueue_css( 'admin.css' );
 
 			//if we are on the current plugin's settings page then check for file /css/admin-settings.css
-			if ( $this->_screen->is_plugin_settings_page() ) {
+			if ( foo_check_plugin_settings_page( $this->plugin_slug ) ) {
 				$this->register_and_enqueue_css( 'admin-settings.css' );
 
 				//Media Uploader Style
@@ -319,13 +270,13 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 			}
 
 			//add any scripts for the current post type /css/admin-foobar.css
-			$post_type = $this->_screen->current_post_type();
+			$post_type = foo_current_screen_post_type();
 			if ( !empty($post_type) ) {
 				$this->register_and_enqueue_css( 'admin-' . $post_type . '.css' );
 			}
 
 			//finally try add any styles for the current screen id /css/admin-screen-id.css
-			$this->register_and_enqueue_css( 'admin-' . $this->_screen->get_screen_id() . '.css' );
+			$this->register_and_enqueue_css( 'admin-' . foo_current_screen_id() . '.css' );
 
 			do_action( $this->plugin_slug . '-admin_print_styles' );
 		}
@@ -356,24 +307,16 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 
 		// render the setting page
 		function admin_settings_render_page() {
-			global $settings_data;
+			$current_directory = plugin_dir_path( __FILE__ );
 
 			//check if a settings.php file exists in the views folder. If so then include it
-			if ( file_exists( $this->plugin_dir . 'views/settings.php' ) ) {
+			if ( file_exists( $current_directory . 'views/settings.php' ) ) {
 
 				//global variable that can be used by the included settings pages
-				$settings_data = array(
-					'plugin_info'      => $this->get_plugin_info(),
-					'settings_summary' => $this->apply_filters( 'settings_page_summary', '' ),
-					'settings_tabs'    => $this->_settings->get_tabs()
-				);
-
-				do_action( $this->plugin_slug . '-before_settings_page_render', $settings_data );
-
-				include_once($this->plugin_dir . 'views/settings.php');
-
-				do_action( $this->plugin_slug . '-after_settings_page_render', $settings_data );
+				include_once( $current_directory . 'views/settings.php');
 			}
+
+			do_action( $this->plugin_slug . '-admin_settings_render_page', $this->_settings );
 		}
 
 		function inline_styles() {

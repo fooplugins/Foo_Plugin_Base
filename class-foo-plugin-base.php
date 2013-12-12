@@ -59,57 +59,57 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 		/** @var Foo_Plugin_Screen */
 		protected $_screen; //a ref to our screen helper class
 
-        /*
-         * @return Foo_Plugin_Settings_v1_0
-         */
-        public function settings() {
-            return $this->_settings;
-        }
+		/*
+		 * @return Foo_Plugin_Settings_v1_0
+		 */
+		public function settings() {
+			return $this->_settings;
+		}
 
-        /*
-         * @return Foo_Plugin_Options_v1_1
-         */
-        public function options() {
-            return $this->_options;
-        }
+		/*
+		 * @return Foo_Plugin_Options_v1_1
+		 */
+		public function options() {
+			return $this->_options;
+		}
 
-        /*
-         * @return Foo_Plugin_Screen_v1_0
-         */
-        public function screen() {
-            return $this->_screen;
-        }
+		/*
+		 * @return Foo_Plugin_Screen_v1_0
+		 */
+		public function screen() {
+			return $this->_screen;
+		}
 
-        /*
-         * @return Foo_Utils_v1_0
-         */
-        public function utils() {
-            return $this->_utils;
-        }
+		/*
+		 * @return Foo_Utils_v1_0
+		 */
+		public function utils() {
+			return $this->_utils;
+		}
 
-        /*
-         * @return string
-         */
-        function get_slug() {
-            return $this->plugin_slug;
-        }
+		/*
+		 * @return string
+		 */
+		function get_slug() {
+			return $this->plugin_slug;
+		}
 
-        function get_plugin_info() {
-            return array(
-                'slug'    => $this->plugin_slug,
-                'title'   => $this->plugin_title,
-                'version' => $this->plugin_version,
-                'dir'     => $this->plugin_dir,
-                'url'     => $this->plugin_url
-            );
-        }
+		function get_plugin_info() {
+			return array(
+				'slug'    => $this->plugin_slug,
+				'title'   => $this->plugin_title,
+				'version' => $this->plugin_version,
+				'dir'     => $this->plugin_dir,
+				'url'     => $this->plugin_url
+			);
+		}
 
 		/*
 		 * plugin constructor
 		 * If the subclass makes use of a constructor, make sure the subclass calls parent::__construct() or parent::init()
 		 */
 		function __construct($file) {
-			$this->init($file);
+			$this->init( $file );
 		}
 
 		/*
@@ -368,16 +368,16 @@ if ( !class_exists( 'Foo_Plugin_Base_v1_1' ) ) {
 					'settings_tabs'    => $this->_settings->get_tabs()
 				);
 
-                do_action( $this->plugin_slug . '-before_settings_page_render', $settings_data );
+				do_action( $this->plugin_slug . '-before_settings_page_render', $settings_data );
 
-                include_once( $this->plugin_dir . 'views/settings.php' );
+				include_once($this->plugin_dir . 'views/settings.php');
 
-                do_action( $this->plugin_slug . '-after_settings_page_render', $settings_data );
+				do_action( $this->plugin_slug . '-after_settings_page_render', $settings_data );
 			}
 		}
 
 		function inline_styles() {
-            do_action( $this->plugin_slug . '-' . (is_admin() ? 'admin' : '') . '_inline_styles', $this );
+			do_action( $this->plugin_slug . '-' . (is_admin() ? 'admin' : '') . '_inline_styles', $this );
 		}
 
 		function inline_scripts() {

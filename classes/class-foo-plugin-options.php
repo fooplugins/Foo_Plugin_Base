@@ -28,15 +28,31 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_0' ) ) {
 		}
 
 		/**
-		 * Returns the array of options.
-		 * @return mixed
+		 * Private function used to return the merged array of all options.
+		 * @return array
 		 */
 		private function get_options() {
+
+			//get the options based on the type of install (multisite or not)
 			if ( is_network_admin() ) {
-				return get_site_option( $this->option_name );
+				$options = get_site_option( $this->option_name );
 			} else {
-				return wp_parse_args( get_option( $this->option_name ), get_site_option( $this->option_name ) );
+				$options = wp_parse_args( get_option( $this->option_name ), get_site_option( $this->option_name ) );
 			}
+
+			//get some defaults (if available)
+			$default_options = apply_filters( $this->option_name . '-default_options', array() );
+
+			//merge!
+			return wp_parse_args( $options, $default_options );
+		}
+
+		/**
+		 * Returns all the options in an array
+		 * @return array
+		 */
+		public function get_all() {
+			return $this->get_options();
 		}
 
 		/**
@@ -45,7 +61,7 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_0' ) ) {
 		 * @param string $key   The key of the individual option that will be stored.
 		 * @param mixed  $value The value of the individual option that will be stored.
 		 */
-		function save($key, $value) {
+		public function save($key, $value) {
 			//first get the options
 			$options = $this->get_options();
 
@@ -78,7 +94,7 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_0' ) ) {
 		 *
 		 * @return mixed
 		 */
-		function get($key, $default = false) {
+		public function get($key, $default = false) {
 			$options = $this->get_options();
 
 			if ( $options ) {
@@ -93,7 +109,7 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_0' ) ) {
 		 *
 		 * @param $key The key of the individual option we want to delete.
 		 */
-		function delete($key) {
+		public function delete($key) {
 			$options = $this->get_options();
 
 			if ( $options ) {

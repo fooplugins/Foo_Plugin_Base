@@ -16,10 +16,6 @@ $plugin_slug = $plugin_info['slug'];
 
 ?>
 <div class="wrap" id="<?php echo $plugin_slug; ?>-settings">
-	<div id="icon-options-general" class="icon32">
-            <br />
-	</div>
-
 	<h2><?php echo esc_html( get_admin_page_title() ); ?></h2>
 	<?php
         //only show the settings messages if less than WP3.5
@@ -42,7 +38,7 @@ $plugin_slug = $plugin_info['slug'];
                     //we have tabs - woot!
                 ?>
                 <div style="float:left;height:16px;width:16px;"><!-- spacer for tabs --></div>
-                <h3 class="foo-nav-tabs nav-tab-wrapper">
+                <h2 class="foo-nav-tabs nav-tab-wrapper">
                 <?php
                     //loop through the tabs to render the actual tabs at the top
                     $first = true;
@@ -52,7 +48,7 @@ $plugin_slug = $plugin_info['slug'];
                         if ($first) { $first = false; }
                     }
                 ?>
-                </h3>
+                </h2>
                 <?php
                     //now loop through the tabs to render the content containers
                     $first = true;
@@ -84,8 +80,9 @@ $plugin_slug = $plugin_info['slug'];
                 }
                 ?>
 		<p class="submit">
-			<input name="Submit" class="button-primary" type="submit" value="<?php _e('Save Changes', $plugin_slug); ?>" />
-                        <input name="<?php echo $plugin_slug; ?>[reset-defaults]" onclick="return confirm('<?php _e('Are you sure you want to restore all settings back to their default values?', $plugin_slug); ?>');" class="button-secondary" type="submit" value="<?php _e('Restore Defaults', $plugin_slug); ?>" />
+			<input name="submit" class="button-primary" type="submit" value="<?php _e('Save Changes', $plugin_slug); ?>" />
+			<input name="<?php echo $plugin_slug; ?>[reset-defaults]" onclick="return confirm('<?php _e('Are you sure you want to restore all settings back to their default values?', $plugin_slug); ?>');" class="button-secondary" type="submit" value="<?php _e('Restore Defaults', $plugin_slug); ?>" />
+			<?php do_action($plugin_slug . '-settings_buttons') ?>
 		</p>
 	</form>
 </div>

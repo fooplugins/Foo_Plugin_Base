@@ -17,6 +17,15 @@ if ( !function_exists( 'foo_current_screen_id' ) ) {
 	}
 }
 
+if ( !function_exists( 'foo_current_screen_base' ) ) {
+	function foo_current_screen_base() {
+		$screen = get_current_screen();
+		if ( empty($screen) ) return false;
+
+		return $screen->base;
+	}
+}
+
 if ( !function_exists( 'foo_current_screen_post_type' ) ) {
 	function foo_current_screen_post_type() {
 		$screen = get_current_screen();

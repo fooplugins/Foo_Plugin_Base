@@ -41,7 +41,7 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_1' ) ) {
 			}
 
 			//get some defaults (if available)
-			$default_options = apply_filters( $this->option_name . '-default_options', array() );
+			$default_options = apply_filters( $this->option_name . '_default_options', array() );
 
 			//merge!
 			return wp_parse_args( $options, $default_options );
@@ -122,6 +122,7 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_1' ) ) {
 				}
 			}
 		}
+
 		/**
 		 * Used to determine if an option is checked (for checkbox options only).
 		 * @param string $key
@@ -131,9 +132,11 @@ if ( !class_exists( 'Foo_Plugin_Options_v2_1' ) ) {
 		 */
 		function is_checked($key, $default = false) {
 			$options = $this->get_options();
+
 			if ($options) {
 				return array_key_exists($key, $options);
 			}
+
 			return $default;
 		}
 	}

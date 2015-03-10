@@ -1,0 +1,149 @@
+.foo_metabox_table {
+	width: 100%;
+}
+
+.foo_metabox_field .foo_metabox_field_input {
+	padding-bottom: 10px;
+}
+
+.foo_metabox_field_label {
+	vertical-align: top;
+	text-align: left;
+	padding: 0.25em 1em 0 0;
+	font-weight: 600;
+	width: 200px;
+}
+
+#side-sortables .foo_metabox_field_label,
+#side-sortables .foo_metabox_field_input {
+	display: block;
+}
+
+.foo_metabox_field_text.small_text .foo_metabox_field_input input {
+	width: 65px;
+}
+
+.foo_metabox_field_text.large_text .foo_metabox_field_input input {
+	width: 300px;
+}
+
+#side-sortables .foo_metabox_field_text.large_text .foo_metabox_field_input input {
+	width: 100%;
+}
+
+.foo_metabox_field_textarea textarea {
+	min-width: 500px;
+	min-height: 100px;
+}
+
+#side-sortables .foo_metabox_field_textarea textarea {
+	min-width: inherit;
+	width: 100%;
+}
+
+.foo_metabox_field_radio input {
+	margin: 0 4px 10px 0;
+}
+
+.foo_metabox_field_radio input + label {
+	vertical-align: top;
+}
+
+.foo_metabox_field .foo_metabox_field_input small {
+	display: block;
+}
+
+.foo_metabox_field_section h4 {
+	font-size: 1.2em;
+	border-bottom: solid 1px #EEE;
+	padding-bottom: 5px;
+}
+
+.foo_metabox_field_help p {
+	position: relative;
+	display: block;
+	line-height: 19px;
+	padding: 11px 15px 11px 40px;
+	font-size: 14px;
+	text-align: left;
+	margin: 5px 0 20px 2px;
+	background-color: #F4F4FF;
+	border-left: 4px solid #1E8CBE;
+	-webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.foo_metabox_field_help p:before {
+	content: "\f223";
+	font: 400 30px/1 dashicons !important;
+	speak: none;
+	color: #1E8CBE;
+	display: inline-block;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	vertical-align: bottom;
+	position: absolute;
+	left: 5px;
+	height: 100%;
+	margin-top: -15px;
+	top: 50%;
+}
+
+
+.foo_metabox_field_number.small_text .foo_metabox_field_input input {
+	width: 65px;
+}
+
+.foo_metabox_field_icon .foo_metabox_field_input label {
+	display:inline-block;
+	margin-right:10px;
+	border:solid 3px transparent;
+	background:#aaa;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	padding:5px;
+	line-height: 0;
+	-webkit-box-shadow: 0px 0px 1px 1px rgba(136,136,136,0.5);
+	-moz-box-shadow: 0px 0px 1px 1px rgba(136,136,136,0.5);
+	box-shadow: 0px 0px 1px 1px rgba(136,136,136,0.5);
+}
+
+.foo_metabox_field_icon .foo_metabox_field_input input:checked + label {
+	border:solid 3px #444;
+	background: #888;
+}
+
+.foo_metabox_field_icon .foo_metabox_field_input label:hover {
+	border:solid 3px #444;
+}
+
+.foo_metabox_field_palette .foo_metabox_field_input label {
+	display:inline-block;
+	margin-right:10px;
+	border:solid 3px transparent;
+	background:#aaa;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	padding:5px;
+	line-height: 0;
+	width: 40px;
+	height: 40px;
+	-webkit-box-shadow: 0px 0px 1px 1px rgba(136,136,136,0.5);
+	-moz-box-shadow: 0px 0px 1px 1px rgba(136,136,136,0.5);
+	box-shadow: 0px 0px 1px 1px rgba(136,136,136,0.5);
+}
+
+.foo_metabox_field_palette .foo_metabox_field_input input:checked + label {
+	border:solid 3px #444;
+	background: #888;
+}
+
+.foo_metabox_field_palette .foo_metabox_field_input label:hover {
+	border:solid 3px #444;
+}
+
+.foo_metabox_field_choice_inline {
+	padding-right: 30px;
+}

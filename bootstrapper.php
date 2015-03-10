@@ -22,6 +22,8 @@ require_once 'classes/class-foo-plugin-file-locator.php';
 if ( is_admin() ) {
 	require_once 'classes/class-foo-plugin-settings.php';
 	require_once 'classes/class-foo-plugin-metabox-sanity.php';
+	require_once 'classes/class-foo-plugin-metaboxes.php';
+	require_once 'classes/class-foo-plugin-metabox-type-visibility.php';
 }
 
 //include all functions we need

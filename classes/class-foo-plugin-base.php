@@ -46,14 +46,14 @@ if ( !class_exists( 'Foo_Plugin_Base_v2_3' ) ) {
 
 		/* internal class dependencies */
 
-		/** @var Foo_Plugin_Settings_v2_1 */
+		/** @var Foo_Plugin_Settings_v2_2 */
 		protected $_settings = false; //a ref to our settings helper class
 
 		/** @var Foo_Plugin_Options_v2_1 */
 		protected $_options = false; //a ref to our options helper class
 
 		/*
-		 * @return Foo_Plugin_Settings_v2_1
+		 * @return Foo_Plugin_Settings_v2_2
 		 */
 		public function settings() {
 			return $this->_settings;
@@ -100,9 +100,9 @@ if ( !class_exists( 'Foo_Plugin_Base_v2_3' ) ) {
 			$this->plugin_dir      = plugin_dir_path( $file );
 			$this->plugin_dir_name = plugin_basename( $this->plugin_dir );
 			$this->plugin_url      = plugin_dir_url( $file );
-			$this->plugin_slug 	= $slug !== false ? $slug : plugin_basename( $file );
-			$this->plugin_title 	= $title !== false ? $title : foo_title_case( $this->plugin_slug );
-			$this->plugin_version = $version;
+			$this->plugin_slug 	   = $slug !== false ? $slug : plugin_basename( $file );
+			$this->plugin_title    = $title !== false ? $title : foo_title_case( $this->plugin_slug );
+			$this->plugin_version  = $version;
 
 			//instantiate our option class
 			$this->_options  = new Foo_Plugin_Options_v2_1($this->plugin_slug);
@@ -121,7 +121,7 @@ if ( !class_exists( 'Foo_Plugin_Base_v2_3' ) ) {
 
 			if ( is_admin() ) {
 				//instantiate our settings class
-				$this->_settings = new Foo_Plugin_Settings_v2_1($this->plugin_slug);
+				$this->_settings = new Foo_Plugin_Settings_v2_2($this->plugin_slug);
 
 				//instantiate our metabox sanity class
 				new Foo_Plugin_Metabox_Sanity_v1($this->plugin_slug);

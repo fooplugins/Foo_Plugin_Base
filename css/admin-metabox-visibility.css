@@ -1,0 +1,69 @@
+.foo_metabox_field_visibility .foo_metabox_field_input .delete-condition:before {
+	content: "\f158";
+}
+
+.foo_metabox_field_visibility .foo_metabox_field_input .delete-condition:before {
+	color: #888;
+	font: 400 20px/1 dashicons;
+	speak: none;
+	display: inline-block;
+	padding: 0;
+	position: relative;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-decoration: none!important;
+	vertical-align: middle;
+}
+
+.foo_metabox_field_visibility .foo_metabox_field_input .condition-seperator {
+	display: inline-block;
+	padding: 10px 0;
+}
+
+#side-sortables .foo_metabox_field_visibility .foo_metabox_field_input .condition-seperator {
+	width:100%;
+	text-align:center;
+}
+
+.foo_metabox_field_visibility .foo_metabox_field_input .condition-seperator hr {
+	display: none;
+}
+
+#side-sortables .foo_metabox_field_visibility .foo_metabox_field_input .condition-seperator hr {
+	margin-left:auto;
+	margin-right:auto;
+	width:43%;
+	display: inline-block;
+
+}
+
+#side-sortables .foo_metabox_field_visibility .foo_metabox_field_input .condition-seperator .left-divider {
+	float:left;
+}
+
+#side-sortables .foo_metabox_field_visibility .foo_metabox_field_input .condition-seperator .right-divider {
+	display: inline-block;
+	float:right;
+}
+
+.foo_metabox_field_visibility .foo_metabox_field_input .add-condition:before {
+	content: '\f132';
+}
+
+.foo_metabox_field_visibility .foo_metabox_field_input .add-condition:before {
+	color: #888;
+	font: 400 20px/1 dashicons;
+	speak: none;
+	display: inline-block;
+	padding: 0 2px 0 0;
+	top: -1px;
+	position: relative;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-decoration: none!important;
+	vertical-align: middle;
+}
+
+.foo_metabox_field_visibility_control {
+	margin-top: 5px;
+}

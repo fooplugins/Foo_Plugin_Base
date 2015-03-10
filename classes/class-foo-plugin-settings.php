@@ -10,8 +10,8 @@
  * License: GPL2
 */
 
-if ( !class_exists( 'Foo_Plugin_Settings_v2_1' ) ) {
-	class Foo_Plugin_Settings_v2_1 {
+if ( !class_exists( 'Foo_Plugin_Settings_v2_2' ) ) {
+	class Foo_Plugin_Settings_v2_2 {
 
 		protected $plugin_slug;
 
@@ -22,6 +22,10 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_1' ) ) {
 
 		function __construct($plugin_slug) {
 			$this->plugin_slug = $plugin_slug;
+
+			//import / export settings
+			add_action( 'admin_init', array( $this, 'handle_export' ) );
+			add_action( 'admin_init', array($this, 'handle_import') );
 		}
 
 		function get_tabs() {
@@ -328,6 +332,17 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_1' ) ) {
 					echo '<input class="regular-text image-upload-url" type="text" id="' . $id . '" name="' . $this->plugin_slug . '[' . $id . ']" placeholder="' . $placeholder . '" value="' . esc_attr( $options[$id] ) . '" />';
 					echo '<input data-uploader-title="' . __('Select An Image', $this->plugin_slug) . '" data-link="' . $id . '" class="image-upload-button" type="button" name="upload_button" value="' . __( 'Select Image', $this->plugin_slug ) . '" />';
 					break;
+				case 'import':
+					echo '<textarea' . $field_class . ' id="' . $id . '" name="' . $this->plugin_slug . '_import" placeholder="' . $placeholder . '"></textarea>';
+
+					break;
+				case 'export':
+					echo '<textarea' . $field_class . ' id="' . $id . '" name="' . $this->plugin_slug . '_export">';
+
+					echo '</textarea>';
+
+					break;
+
 
 				default:
 					do_action( $this->plugin_slug . '_admin_settings_custom_type_render_setting', $args );
@@ -404,6 +419,65 @@ if ( !class_exists( 'Foo_Plugin_Settings_v2_1' ) ) {
 				}
 
 			}
+		}
+
+		/**
+		 * Process a settings export that generates a .json file of the shop settings
+		 */
+		function handle_export() {
+			if( empty( $_POST[$this->plugin_slug . '_action'] ) || 'export_settings' != $_POST[$this->plugin_slug . '_action'] )
+				return;
+
+			if( ! wp_verify_nonce( $_POST[$this->plugin_slug . '_export_nonce'], $this->plugin_slug . '_export_nonce' ) )
+				return;
+
+			if( ! current_user_can( 'manage_options' ) )
+				return;
+
+			$settings = get_option( $this->plugin_slug );
+
+			ignore_user_abort( true );
+
+			nocache_headers();
+			header( 'Content-Type: application/json; charset=utf-8' );
+			header( 'Content-Disposition: attachment; filename=foogallery-custom-branding-settings-' . date( 'm-d-Y' ) . '.json' );
+			header( "Expires: 0" );
+
+			echo json_encode( $settings );
+			exit;
+		}
+
+		/**
+		 * Process a settings import from a json file
+		 */
+		function handle_import() {
+			if( empty( $_POST[$this->plugin_slug . '_action'] ) || 'import_settings' != $_POST[$this->plugin_slug . '_action'] )
+				return;
+
+			if( ! wp_verify_nonce( $_POST[$this->plugin_slug . '_import_nonce'], $this->plugin_slug . '_import_nonce' ) )
+				return;
+
+			if( ! current_user_can( 'manage_options' ) )
+				return;
+
+			$extension = end( explode( '.', $_FILES['import_file']['name'] ) );
+
+			if( $extension != 'json' ) {
+				wp_die( __( 'Please upload a valid .json file' ) );
+			}
+
+			$import_file = $_FILES['import_file']['tmp_name'];
+
+			if( empty( $import_file ) ) {
+				wp_die( __( 'Please upload a file to import' ) );
+			}
+
+			// Retrieve the settings from the file and convert the json object to an array.
+			$settings = (array) json_decode( file_get_contents( $import_file ) );
+
+			update_option( $this->plugin_slug, $settings );
+
+			wp_safe_redirect( admin_url( 'options-general.php?page='.$this->plugin_slug ) ); exit;
 		}
 	}
 }

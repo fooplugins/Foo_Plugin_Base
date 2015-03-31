@@ -50,7 +50,7 @@ if ( !class_exists( 'Foo_Plugin_Metaboxes_v1' ) ) {
                 add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 
                 //save extra post data from the metaboxes
-                add_action( 'save_post', array( $this, 'save_post_data' ) );
+                add_action( 'save_post_' . $this->custom_post_type, array( $this, 'save_post_data' ) );
 
                 //add scripts used by metaboxes
                 add_action( 'admin_enqueue_scripts', array( $this, 'include_required_scripts' ) );
@@ -109,7 +109,12 @@ if ( !class_exists( 'Foo_Plugin_Metaboxes_v1' ) ) {
         function save_post_data( $post_id ) {
             // check autosave
             if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-                return $post_id;
+                return;
+            }
+
+            // If this is just a revision, get out!
+            if ( wp_is_post_revision( $post_id ) ) {
+                return;
             }
 
             $metaboxes = $this->get_metabox_config();
@@ -124,14 +129,19 @@ if ( !class_exists( 'Foo_Plugin_Metaboxes_v1' ) ) {
                         //if we get here, we are dealing with the correct metabox and custom post type
 
                         $field_meta_key = $this->get_post_meta_key( $metabox );
-                        $data = isset( $_POST[$field_meta_key] ) ? $_POST[$field_meta_key] : array();
+                        $data = isset( $_POST[$field_meta_key] ) ? $_POST[$field_meta_key] : null;
 
                         $data = apply_filters( $nonce_key . '_save_post_data', $data, $metabox );
-                        update_post_meta( $post_id, $field_meta_key, $data );
+
+                        if ( !empty( $data ) ) {
+                            update_post_meta( $post_id, $field_meta_key, $data );
+                        }
 
                         do_action( $nonce_key . '_after_save_post', $post_id, $data, $metabox );
                     }
                 }
+
+                do_action( $this->custom_post_type . '_after_save_post', $post_id, $metaboxes );
             }
         }
 

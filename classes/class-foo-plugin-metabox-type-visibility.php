@@ -147,11 +147,8 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 								<option value="role" <?php selected( "role", $condition['major'] ); ?>><?php echo esc_html_x( 'Role', $this->plugin_textdomain ); ?></option>
 							</optgroup>
 							<optgroup label="<?php esc_html_e( 'Archives', $this->plugin_textdomain ); ?>">
-								<?php
-								foreach ( $taxonomies as $taxonomy ) { ?>
-									<option value="<?php echo esc_attr( 'taxonomy-archive-' . $taxonomy->name ); ?>" <?php selected( 'taxonomy-' . $taxonomy->name, $condition['major'] ); ?>><?php echo esc_html( $taxonomy->labels->singular_name ); ?></option>
-								<?php
-								} ?>
+								<option value="post_archive" <?php selected( "post_archive", $condition['major'] ); ?>><?php echo esc_html_x( 'Post Archive', $this->plugin_textdomain ); ?></option>
+								<option value="taxonomy_archive" <?php selected( "taxonomy_archive", $condition['major'] ); ?>><?php echo esc_html_x( 'Taxonomy Archive', $this->plugin_textdomain ); ?></option>
 								<option value="date" <?php selected( "date", $condition['major'] ); ?>><?php echo esc_html_x( 'Date', $this->plugin_textdomain ); ?></option>
 							</optgroup>
 						</select>
@@ -207,7 +204,6 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 					}
 
 				}
-
 			} else if ( foo_starts_with( $major, 'taxonomy-' ) ) {
 
 				$taxonomy        = str_replace( 'taxonomy-', '', $major );
@@ -220,30 +216,12 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 				$terms = get_terms( array( $taxonomy ), array( 'number' => 250, 'hide_empty' => false ) );
 				foreach ( $terms as $term ) {
 					?>
-					<option value="<?php echo esc_attr( $taxonomy . '_tax_' . $term->term_id ); ?>" <?php selected( $taxonomy . '_tax_' . $term->term_id, $minor ); ?>><?php echo esc_html( $term->name ); ?></option>
+					<option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( $term->term_id, $minor ); ?>><?php echo esc_html( $term->name ); ?></option>
 				<?php
 				}
 
 			} else {
 				switch ( $major ) {
-					case 'category':
-						?>
-						<option value=""><?php _e( 'All category pages', $this->plugin_textdomain ); ?></option>
-						<?php
-
-						$categories = get_categories( array(
-							'number'  => 1000,
-							'orderby' => 'count',
-							'order'   => 'DESC'
-						) );
-						usort( $categories, array( __CLASS__, 'strcasecmp_name' ) );
-
-						foreach ( $categories as $category ) {
-							?>
-							<option value="<?php echo esc_attr( $category->term_id ); ?>" <?php selected( $category->term_id, $minor ); ?>><?php echo esc_html( $category->name ); ?></option>
-						<?php
-						}
-						break;
 					case 'user':
 						?>
 						<option value="" <?php selected( '', $minor ); ?>><?php _e( 'Logged In', $this->plugin_textdomain ); ?></option>
@@ -267,6 +245,26 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 						foreach ( $wp_roles->roles as $role_key => $role ) {
 							?>
 							<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( $role_key, $minor ); ?> ><?php echo esc_html( $role['name'] ); ?></option>
+						<?php
+						}
+						break;
+					case 'post_archive':
+						?>
+						<option value=""><?php _e( 'Any post archive', $this->plugin_textdomain ); ?></option>
+						<?php
+						$post_types = get_post_types( array( 'public' => true ), 'objects' );
+						foreach ( $post_types as $post_type ) { ?>
+							<option value="<?php echo esc_attr( $post_type->name ); ?>" <?php selected( $post_type->name, $minor ); ?>><?php echo esc_html( $post_type->labels->singular_name ); ?></option>
+						<?php
+						}
+						break;
+					case 'taxonomy_archive':
+						?>
+						<option value=""><?php _e( 'Any taxonomy archive', $this->plugin_textdomain ); ?></option>
+						<?php
+						$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+						foreach ( $taxonomies as $taxonomy ) { ?>
+							<option value="<?php echo esc_attr( $taxonomy->name ); ?>" <?php selected( $taxonomy->name, $minor ); ?>><?php echo esc_html( $taxonomy->labels->singular_name ); ?></option>
 						<?php
 						}
 						break;
@@ -351,7 +349,7 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 		 * @return bool false to hide.
 		 */
 		public static function determine_visibility( $field_value ) {
-			global $wp_query;
+			global $wp_query, $is_IE, $is_chrome, $is_safari, $is_opera, $is_gecko;
 
 			if ( empty( $field_value ) ) {
 				return false;
@@ -379,16 +377,33 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 				if ( foo_starts_with( $major, 'post_type-' ) ) {
 
 					$post_type = substr( $major, 10 );
-					$queried_post_type = get_query_var('post_type');
+
 					if ( '' === $minor ) {
 						$condition_result = is_singular( $post_type );
-					} else {
-
+					} else if ( is_singular() && $minor == get_the_ID() ){
+						$condition_result = true;
 					}
 
-				} else if ( foo_starts_with( $condition['major'], 'taxonomy-archive-' ) ) {
-
 				} else if ( foo_starts_with( $condition['major'], 'taxonomy-' ) ) {
+
+					$taxonomy = substr( $major, 9 );
+
+					if ( '' === $minor ) {
+						$condition_result = is_tax( $taxonomy );
+					} else {
+
+						if ( is_tax( $taxonomy, $minor ) )
+							$condition_result = true;
+						else if ( is_singular() && has_term( $minor, $taxonomy ) )
+							$condition_result = true;
+						else if ( is_singular() && $post_id = get_the_ID() ){
+							$terms = get_the_terms( $post_id, $taxonomy ); // Does post have terms in taxonomy?
+							if ( $terms & ! is_wp_error( $terms ) ) {
+								$condition_result = true;
+							}
+						}
+					}
+
 
 				} else {
 					switch ( $condition['major'] ) {
@@ -433,39 +448,19 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 										$condition_result = is_front_page() && !is_paged();
 									}
 									break;
-								default:
-									if ( substr( $condition['minor'], 0, 10 ) == 'post_type-' )
-										$condition_result = is_singular( substr( $condition['minor'], 10 ) );
-									else {
-										// $condition['minor'] is a page ID
-										$condition_result = is_page( $condition['minor'] );
-									}
-									break;
+//								default:
+//									if ( substr( $condition['minor'], 0, 10 ) == 'post_type-' )
+//										$condition_result = is_singular( substr( $condition['minor'], 10 ) );
+//									else {
+//										// $condition['minor'] is a page ID
+//										$condition_result = is_page( $condition['minor'] );
+//									}
+//									break;
 							}
 							break;
-						case 'tag':
-							if ( ! $condition['minor'] && is_tag() )
-								$condition_result = true;
-							else if ( is_singular() && $condition['minor'] && has_tag( $condition['minor'] ) )
-								$condition_result = true;
-							else {
-								$tag = get_tag( $condition['minor'] );
-
-								if ( $tag && is_tag( $tag->slug ) )
-									$condition_result = true;
-							}
-							break;
-						case 'category':
-							if ( ! $condition['minor'] && is_category() )
-								$condition_result = true;
-							else if ( is_category( $condition['minor'] ) )
-								$condition_result = true;
-							else if ( is_singular() && $condition['minor'] && in_array( 'category', get_post_taxonomies() ) &&  has_category( $condition['minor'] ) )
-								$condition_result = true;
-							break;
-						case 'loggedin':
+						case 'user':
 							$condition_result = is_user_logged_in();
-							if ( 'loggedin' !== $condition['minor'] ) {
+							if ( 'loggedout' === $condition['minor'] ) {
 								$condition_result = ! $condition_result;
 							}
 							break;
@@ -507,6 +502,33 @@ if ( ! class_exists( 'Foo_Plugin_Metabox_Type_Visibility_v1' ) ) {
 								if( $terms & ! is_wp_error( $terms ) ) {
 									$condition_result = true;
 								}
+							}
+							break;
+						case 'device':
+							if ( 'mobile' === $condition['minor'] ) {
+								$condition_result = wp_is_mobile();
+							} else {
+								$condition_result = !wp_is_mobile();
+							}
+							break;
+
+						case 'browser':
+							switch ( $condition['minor'] ) {
+								case 'ie':
+									$condition_result = $is_IE;
+									break;
+								case 'opera':
+									$condition_result = $is_opera;
+									break;
+								case 'chrome':
+									$condition_result = $is_chrome;
+									break;
+								case 'safari':
+									$condition_result = $is_safari;
+									break;
+								case 'gecko':
+									$condition_result = $is_gecko;
+									break;
 							}
 							break;
 					}

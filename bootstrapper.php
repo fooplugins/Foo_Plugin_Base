@@ -23,8 +23,10 @@ if ( is_admin() ) {
 	require_once 'classes/class-foo-plugin-settings.php';
 	require_once 'classes/class-foo-plugin-metabox-sanity.php';
 	require_once 'classes/class-foo-plugin-metaboxes.php';
-	require_once 'classes/class-foo-plugin-metabox-type-visibility.php';
 }
+
+//needed in both admin and non-admin if checking for visibility
+require_once 'classes/class-foo-plugin-metabox-type-visibility.php';
 
 //include all functions we need
 require_once 'functions/arrays.php';

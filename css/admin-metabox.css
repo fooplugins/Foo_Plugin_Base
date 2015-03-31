@@ -121,6 +121,7 @@
 .foo_metabox_field_palette .foo_metabox_field_input label {
 	display:inline-block;
 	margin-right:10px;
+	margin-bottom:10px;
 	border:solid 3px transparent;
 	background:#aaa;
 	border-radius: 3px;
